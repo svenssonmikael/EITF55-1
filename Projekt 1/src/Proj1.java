@@ -3,15 +3,15 @@ import java.math.BigInteger;
 
 public class Proj1 {
     public static String RabinMiller(BigInteger input){
-        if( (input.compareTo(BigInteger.valueOf(3)) <= 0 ) || (input.mod(BigInteger.TWO).equals(BigInteger.ZERO))) return "invalid input";
+        if( (input.compareTo(BigInteger.valueOf(3)) <= 0 ) || (input.mod(BigInteger.TWO).equals(BigInteger.ZERO))) return "Invalid input";
 
         BigInteger n = input;
         BigInteger s = input.subtract(BigInteger.ONE);
         BigInteger two = BigInteger.valueOf(2);
-        int r = 0;
+        BigInteger r = BigInteger.ZERO;                 //MICKE: changed from int to BigInteger
         while(s.mod(two).equals(BigInteger.ZERO)){
-            r++;
-            s = s.divide(two);
+            r = r.add(BigInteger.ONE);                  //MICKE: changed from int to BigInteger
+            s = s.divide(two);                          
         }// Calculate params for writing n as (2^r)*s
         
         Random rand = new Random();
@@ -23,8 +23,8 @@ public class Proj1 {
 
         if((x.equals(BigInteger.valueOf(1))) || (x.equals(input.subtract(BigInteger.ONE)))) return "ProbablyPrime";
 
-        for(int j = 1; j<=r-1; j++){
-            x = a.modPow(two.pow(j).multiply(s), n);
+        for(BigInteger j = BigInteger.ONE; j.compareTo(r) < 0; j = j.add(BigInteger.ONE)){                  //MICKE: did som magic here to the assignment "j = j.add...." instead of "j++
+            x = a.modPow(two.pow(j.intValue()).multiply(s), n);         //MICKE: added intValue() after above changes
             //x = x.modPow(BigInteger.TWO, n);
 
             if(x.equals(BigInteger.ONE)) return "Composite";
@@ -33,37 +33,29 @@ public class Proj1 {
       return "Composite";
     }
 
-    public static String randomBaseTest(BigInteger x){
-        for(int i=0; i<20;i++){
-            if(RabinMiller(x).equals("Composite")) return "Composite";
+    public static boolean randomBaseTest(BigInteger x){         //MICKE: changed return type to boolean for convenience
+        for(int i=0; i<20;i++){                                 //true is probably prime, false is composite
+            if(RabinMiller(x).equals("Composite") || RabinMiller(x).equals("Invalid input") ) return false;
         }
-        return "ProbablyPrime";
+        return true;
     }
 
     public static void main(String[] args) {
-        System.out.println("(one base test) 53 is " + RabinMiller(BigInteger.valueOf(53)));
-        System.out.println("101 is "+ randomBaseTest(BigInteger.valueOf(101))+" ,expected Prime");
-        System.out.println("8191 is "+ randomBaseTest(BigInteger.valueOf(8191))+" ,expected Prime"); 
-        System.out.println("15 is "+ randomBaseTest(BigInteger.valueOf(15))+" ,expected Composite");
-        System.out.println("524287 is "+ randomBaseTest(BigInteger.valueOf(524287))+" ,expected Prime");
-        System.out.println("221 is "+ randomBaseTest(BigInteger.valueOf(221))+" ,expected Composite");
-        System.out.println("104729 is "+ randomBaseTest(BigInteger.valueOf(104729))+" ,expected Prime");
-        System.out.println("997 is "+ randomBaseTest(BigInteger.valueOf(997))+" ,expected Prime");
-        BigInteger s = new BigInteger(512, new Random());
-        System.out.println(s+"  , " + randomBaseTest(s));
-        s = new BigInteger(512, new Random());
-        System.out.println(s+"  , " + randomBaseTest(s));
-        s = new BigInteger(512, new Random());
-        System.out.println(s+"  , " + randomBaseTest(s));
-        s = new BigInteger(512, new Random());
-        System.out.println(s+"  , " + randomBaseTest(s));
-        s = new BigInteger(512, new Random());
-        System.out.println(s+"  , " + randomBaseTest(s));
-        s = new BigInteger(512, new Random());
-        System.out.println(s+"  , " + randomBaseTest(s));
-        s = new BigInteger(512, new Random());
-        System.out.println(s+"  , " + randomBaseTest(s));
-        s = new BigInteger(512, new Random());
-        System.out.println(s+"  , " + randomBaseTest(s));
+        
+        //MICKE: your job is to create primes, 100 of them. Therefore the loop below. Your problem was mainly that
+        // you got stuck on the invalid input return in the beginning of the algorithm. So as soon as the mega number
+        // that was generated was a even number, problems occured. However, some magic here and there and it seems to 
+        // go well :) Read the comments to see what I did. I also changed the return type of the randomBaseTest.
+
+        for(int i=0; i<100; i++){                               
+            BigInteger s = new BigInteger(512, new Random());
+            while(!randomBaseTest(s)){
+                s = new BigInteger(512, new Random());
+            }
+            System.out.println("PRIME TIME:");
+            System.out.println(s+" is probably prime!");
+            System.out.println("Progress: "+i+"%");
+        }
+        System.out.println("Done! 100 primes generated!");
      }
 }
